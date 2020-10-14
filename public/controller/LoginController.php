@@ -32,7 +32,7 @@ class LoginController
         $payload = json_encode(
             [
                 'iat' => time(),
-                'exp' => time() + (60*60),
+                'exp' => time() + (60 * 60),
                 'aswerOfAnythink' => 42
             ]
         );
@@ -60,14 +60,14 @@ class LoginController
 
                 $this->userName = $_POST['userLogin'];
             } else {
-                $this->loginError = 1;
+                $this->loginError = 2;
             }
 
             if ($_POST['userPassword'] != NULL && strlen($_POST['userPassword']) >= 4 &&  strlen($_POST['userPassword']) <= 20) {
 
                 $this->userPassword = $_POST['userPassword'];
             } else {
-                $this->loginError = 1;
+                $this->loginError = 2;
             }
 
             // Filtrage de sécurité des variables envoyés par depuis le post.
@@ -76,9 +76,13 @@ class LoginController
                 $this->userPassword = filter_var($this->userPassword, FILTER_SANITIZE_STRING);
             }
 
-            if ($this->userName == $this->secretUserName && $this->userPassword == $this->secretUserPassword) {
+            if ($this->loginError == 0 && $this->userName == $this->secretUserName && $this->userPassword == $this->secretUserPassword) {
 
                 $this->token = $this->createJWT();
+
+                header("Authorization:" . "Bearer " . $this->token);
+            } else {
+                $this->loginError = 1;
             }
         }
     }
