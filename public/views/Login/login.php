@@ -1,11 +1,20 @@
 <div class="container">
 
-    <?php if ($UserController->loginError == 1) {
+    <?php if ($LoginController->loginError == 1) {
         // Affichage des erreurs.
     ?>
         <br>
         <div class="alert alert-danger" role="alert">
             Erreur d'association entre le nom d'utilisateur et le mot de passe.
+        </div>
+    <?php
+    } 
+    if ($LoginController->loginError == 0 && $_POST) {
+        // Affichage du token JWT
+    ?>
+        <br>
+        <div class="alert alert-info" role="alert">
+            Votre token JWT : <code><?php echo $LoginController->token; ?></code>
         </div>
     <?php
     } ?>
