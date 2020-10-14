@@ -1,0 +1,22 @@
+version: '3.5'
+
+services:
+  web:
+    build:
+      context: ./
+      dockerfile: php-apache
+    ports:
+      - "80:80"
+      - "443:443"
+      - "9000"
+    volumes:
+      - ../:/var/www/html/
+      - ../docker/config/apache2/sites-enabled/000-default.conf:/etc/apache2/sites-enabled/000-default.conf
+      - ../docker/config/php/php.ini:/etc/php/7.3/cli/php.ini
+      - ../docker/config/php/php.ini:/usr/local/etc/php/php.ini
+    networks:
+      - bridge
+
+networks:
+  bridge:
+    driver: bridge
