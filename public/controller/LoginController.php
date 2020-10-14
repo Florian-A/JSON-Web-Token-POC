@@ -53,7 +53,7 @@ class LoginController
         return $jwt;
     }
 
-    public function login()
+    public function check()
     {
         if ($_POST) {
             if ($_POST['userLogin'] != NULL && strlen($_POST['userLogin']) >= 2 &&  strlen($_POST['userLogin']) <= 20) {
@@ -85,5 +85,10 @@ class LoginController
                 $this->loginError = 1;
             }
         }
+    }
+
+    public function test()
+    {
+
     }
 }

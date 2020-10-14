@@ -8,7 +8,7 @@
             Erreur d'association entre le nom d'utilisateur et le mot de passe.
         </div>
     <?php
-    } 
+    }
     if ($LoginController->loginError == 0 && $_POST) {
         // Affichage du token JWT
     ?>
@@ -39,4 +39,39 @@
             </div>
         </div>
     </form>
+    <div class="row">
+        <div class="col text-center mt-3">
+            <a href="#" class="test-jwt">Tester le JWT</a>
+        </div>
+    </div>
+
 </div>
+
+<script>
+    // Fonction de déclanchement de la requete Ajax de test.
+    function get(url,jwt) {
+        return new Promise((resolve, reject) => {
+            const req = new XMLHttpRequest();
+            req.open('GET', url);
+            req.setRequestHeader("Authorization", "Bearer "+jwt);
+            req.onload = () => req.status === 200 ? resolve(req.response) : reject(Error(req.statusText));
+            req.onerror = (e) => reject(Error(`Network Error: ${e}`));
+            req.send();
+        });
+    }
+
+    document.querySelector(".test-jwt").addEventListener("click", async () =>  {
+        jwt = await localStorage.getItem('jwt');
+        get('http://localhost/index.php?LoginController&test',jwt);
+    });
+</script>
+
+<?php if ($LoginController->loginError == 0 && $_POST) {
+    // Assignation du token dans le local storage.
+?>
+    <script>
+    localStorage.setItem("jwt", "<?php echo $LoginController->token ?>");
+    </script>
+<?php
+}
+?>

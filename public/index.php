@@ -45,5 +45,5 @@ if ($controllerName !== NULL and $methodName !== NULL) {
     require_once 'views/header.php';
 } else {
     // Si mauvaise route appelée, redirection vers la page d'authentification.
-    return header('Location: index.php?LoginController&login');
+    return header('Location: index.php?LoginController&check');
 }
