@@ -9,6 +9,8 @@ class LoginController
     private $secretUserName = "bob";
     private $secretUserPassword = 1234;
 
+    private $JWTHashingSecret = "xz54op5uwe32nbzkj3jh43";
+
     public $token;
     public $loginError = 0;
 
@@ -19,24 +21,33 @@ class LoginController
     public function createJWT()
     {
         // Créer une en-tête de jeton sous forme de chaîne JSON
-        $header = json_encode(['typ' => 'JWT', 'alg' => 'HS256']);
+        $header = json_encode(
+            [
+                'typ' => 'JWT',
+                'alg' => 'HS256'
+            ]
+        );
 
-        // Créer une charge utile de jeton sous forme de chaîne JSON
-        $payload = json_encode(['user_id' => 123]);
+        // Création d'une charge utile du token sous forme de chaîne JSON
+        $payload = json_encode(
+            [
+                'iat' => time(),
+                'exp' => time() + (60*60),
+                'aswerOfAnythink' => 42
+            ]
+        );
 
-        // Modification des chaines de caractères
-        // Encoder l'en-tête en chaîne Base64Url
+        // Encodage l'en-tête et de la charge utile en Base64Url
         $base64UrlHeader = str_replace(['+', '/', '='], ['-', '_', ''], base64_encode($header));
-        // Encoder la charge utile en chaîne Base64Url
         $base64UrlPayload = str_replace(['+', '/', '='], ['-', '_', ''], base64_encode($payload));
 
-        // Créer un hachage de la signature
-        $signature = hash_hmac('sha256', $base64UrlHeader . "." . $base64UrlPayload, 'abC123!', true);
+        // Création de la signature
+        $signature = hash_hmac('sha256', $base64UrlHeader . "." . $base64UrlPayload, $this->JWTHashingSecret, true);
 
-        // Encoder la signature en chaîne Base64Url
+        // Encodage de la signature en chaîne Base64Url
         $base64UrlSignature = str_replace(['+', '/', '='], ['-', '_', ''], base64_encode($signature));
 
-        // Création du JWT.
+        // Création du token JWT.
         $jwt = $base64UrlHeader . "." . $base64UrlPayload . "." . $base64UrlSignature;
 
         return $jwt;
