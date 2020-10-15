@@ -90,5 +90,25 @@ class LoginController
     public function test()
     {
 
+        // Récupération du token sous format plain.
+        $token = str_replace("Bearer ", '', $_SERVER['HTTP_AUTHORIZATION']);
+
+        // Décomposition du token en un tableau.
+        $tokentoArray = explode(".", $token);
+
+        // Assignation du haut de page, de la charge utile et de la signature du token.
+        $header = json_decode(base64_decode($tokentoArray[0]));
+        $body = json_decode(base64_decode($tokentoArray[1]));
+        $signature = base64_decode($tokentoArray[2]);
+
+        // Récupération de la date d'éxpiration.
+        $tokenExpirationTime = filter_var($body->exp, FILTER_SANITIZE_NUMBER_INT);
+
+        if ($tokenExpirationTime >= time()  ) {
+            echo "Token non expiré !";
+        }
+        else {
+            echo "Token expiré !";
+        }
     }
 }
