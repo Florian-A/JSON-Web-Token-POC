@@ -18,39 +18,50 @@ class LoginController
     {
     }
 
-    public function createJWT()
+    private function base64_url_encode($data)
+    {
+        return strtr(base64_encode($data), '+/=', '-_,');
+    }
+
+    private function base64_url_decode($data)
+    {
+        return base64_decode(strtr($data, '-_,', '+/='));
+    }
+
+    private function createJWT()
     {
         // Créer une en-tête de jeton sous forme de chaîne JSON
         $header = json_encode(
             [
-                'typ' => 'JWT',
-                'alg' => 'HS256'
+                "typ" => "JWT",
+                "alg" => "HS256"
             ]
         );
 
         // Création d'une charge utile du token sous forme de chaîne JSON
         $payload = json_encode(
             [
-                'iat' => time(),
-                'exp' => time() + (60 * 60),
-                'aswerOfAnythink' => 42
+                "iat" => time(),
+                "exp" => time() + (60 * 60),
+                "aswerOfAnythink" => 42
             ]
         );
 
-        // Encodage l'en-tête et de la charge utile en Base64Url
-        $base64UrlHeader = str_replace(['+', '/', '='], ['-', '_', ''], base64_encode($header));
-        $base64UrlPayload = str_replace(['+', '/', '='], ['-', '_', ''], base64_encode($payload));
+        // Génération de la signature
+        $signature = $this->generateJWTSignature($this->base64_url_encode($header), $this->base64_url_encode($payload));
 
-        // Création de la signature
-        $signature = hash_hmac('sha256', $base64UrlHeader . "." . $base64UrlPayload, $this->JWTHashingSecret, true);
-
-        // Encodage de la signature en chaîne Base64Url
-        $base64UrlSignature = str_replace(['+', '/', '='], ['-', '_', ''], base64_encode($signature));
-
-        // Création du token JWT.
-        $jwt = $base64UrlHeader . "." . $base64UrlPayload . "." . $base64UrlSignature;
+        // Création du token JWT
+        $jwt = $this->base64_url_encode($header) . "." . $this->base64_url_encode($payload) . "." . $this->base64_url_encode($signature);
 
         return $jwt;
+    }
+
+    public function generateJWTSignature($header, $payload)
+    {
+        // Création de la signature
+        $signature = hash_hmac('sha256', $header . "." . $payload, $this->JWTHashingSecret, true);
+
+        return $signature;
     }
 
     public function check()
@@ -91,37 +102,35 @@ class LoginController
     {
 
         // Récupération du token sous format plain.
-        $token = str_replace("Bearer ", '', $_SERVER['HTTP_AUTHORIZATION']);
+        $tokenSent = str_replace("Bearer ", '', $_SERVER['HTTP_AUTHORIZATION']);
 
-        // Décomposition du token en un tableau.
-        $tokentoArray = explode(".", $token);
-
-        // Assignation du haut de page, de la charge utile et de la signature du token.
-        $header = base64_decode($tokentoArray[0]);
-        $payload = base64_decode($tokentoArray[1]);
-        $signature = base64_decode($tokentoArray[2]);
+        // Décomposition du token en un tableau avec destructuration.
+        [$header, $payload, $signature] = explode(".", $tokenSent);
+        $header = $this->base64_url_decode($header);
+        $payload = $this->base64_url_decode($payload);
+        $signature = $this->base64_url_decode($signature);
 
         $headerObject = json_decode($header);
         $payloadObject = json_decode($payload);
 
-
-        // Recréation de la signature JWT afin de vérifier qu'elle est valide.
-        // $recalculatedSignature = hash_hmac('sha256', $header . "." . $payload, $this->JWTHashingSecret, true);
-        // $base64UrlRecalculatedSignature = str_replace(['+', '/', '='], ['-', '_', ''], $recalculatedSignature);
-
-        // // Test de la signature.
-        // if($base64UrlRecalculatedSignature == $signature )
-        // {
-        //     echo "Signature ok";
-        // }
-
-        // Récupération de la date d'éxpiration.
+        // Re-création de la signature suivant le header et payload renvoyé par le token.
+        $recalculatedSignature = $this->generateJWTSignature($this->base64_url_encode($header),$this->base64_url_encode($payload));
+        
+        // Récupération de la date d'expiration.
         $tokenExpirationTime = filter_var($payloadObject->exp, FILTER_SANITIZE_NUMBER_INT);
 
-        if ($tokenExpirationTime >= time()) {
-            echo "Token non expiré !";
-        } else {
-            echo "Token expiré !";
+        // Test de la signature.
+        if ($recalculatedSignature == $signature) {
+
+            // Test de la date d'expiration.
+            if ($tokenExpirationTime >= time()) {
+                echo "Token JWT non expiré";
+            } else {
+                echo "Token JWT expiré !";
+            }
+        }
+        else {
+            echo "Token JWT avec une signature NON valide !";
         }
 
         // Retour de 1 afin de bloquer l'affichage de la vue.
