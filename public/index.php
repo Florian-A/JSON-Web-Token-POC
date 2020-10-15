@@ -32,17 +32,20 @@ if ($controllerName !== NULL and $methodName !== NULL) {
     $$a = new $controllerName;
 
     // Appel de la méthode puis déstruction de l'instance de connexion à la base de données.
-    $$controllerName->$methodName();
-    //$$className->destructDatabaseConnection();
+    $returnMethod = $$controllerName->$methodName();
 
-    // Affichage du haut de page.
-    require_once 'views/header.php';
+    // Si la méthode retourne 1, alors non affichage de la vue.
+    if (isset($returnMethod) && $returnMethod == 1) {
+    } else {
+        // Affichage du haut de page.
+        require_once 'views/header.php';
 
-    // Affichage de la vue.
-    require_once 'views/' . str_replace('Controller', '', $controllerName) . '/' . $methodName . '.php';
+        // Affichage de la vue.
+        require_once 'views/' . str_replace('Controller', '', $controllerName) . '/' . $methodName . '.php';
 
-    // Affichage du bas de page.
-    require_once 'views/header.php';
+        // Affichage du bas de page.
+        require_once 'views/header.php';
+    }
 } else {
     // Si mauvaise route appelée, redirection vers la page d'authentification.
     return header('Location: index.php?LoginController&check');

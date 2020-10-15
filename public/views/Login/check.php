@@ -62,7 +62,8 @@
 
     document.querySelector(".test-jwt").addEventListener("click", async () =>  {
         jwt = await localStorage.getItem('jwt');
-        get('http://localhost/index.php?LoginController&test',jwt);
+        reponse = await get('http://localhost/index.php?LoginController&test',jwt);
+        alert(reponse);
     });
 </script>
 

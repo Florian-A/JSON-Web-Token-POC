@@ -97,18 +97,34 @@ class LoginController
         $tokentoArray = explode(".", $token);
 
         // Assignation du haut de page, de la charge utile et de la signature du token.
-        $header = json_decode(base64_decode($tokentoArray[0]));
-        $body = json_decode(base64_decode($tokentoArray[1]));
+        $header = base64_decode($tokentoArray[0]);
+        $payload = base64_decode($tokentoArray[1]);
         $signature = base64_decode($tokentoArray[2]);
 
-        // Récupération de la date d'éxpiration.
-        $tokenExpirationTime = filter_var($body->exp, FILTER_SANITIZE_NUMBER_INT);
+        $headerObject = json_decode($header);
+        $payloadObject = json_decode($payload);
 
-        if ($tokenExpirationTime >= time()  ) {
+
+        // Recréation de la signature JWT afin de vérifier qu'elle est valide.
+        // $recalculatedSignature = hash_hmac('sha256', $header . "." . $payload, $this->JWTHashingSecret, true);
+        // $base64UrlRecalculatedSignature = str_replace(['+', '/', '='], ['-', '_', ''], $recalculatedSignature);
+
+        // // Test de la signature.
+        // if($base64UrlRecalculatedSignature == $signature )
+        // {
+        //     echo "Signature ok";
+        // }
+
+        // Récupération de la date d'éxpiration.
+        $tokenExpirationTime = filter_var($payloadObject->exp, FILTER_SANITIZE_NUMBER_INT);
+
+        if ($tokenExpirationTime >= time()) {
             echo "Token non expiré !";
-        }
-        else {
+        } else {
             echo "Token expiré !";
         }
+
+        // Retour de 1 afin de bloquer l'affichage de la vue.
+        return 1;
     }
 }
