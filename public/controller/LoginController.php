@@ -110,6 +110,7 @@ class LoginController
         $payload = $this->base64_url_decode($payload);
         $signature = $this->base64_url_decode($signature);
 
+        // Transformation du JSON en object PHP.
         $headerObject = json_decode($header);
         $payloadObject = json_decode($payload);
 
