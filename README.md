@@ -1,8 +1,6 @@
-# Exercice de sécurité J2
+# JSON Web Token POC
 
 ## Contexte :
-
-Exercice de developpement : 
 
 - Générer un JWT si un utilisateur est bien connecté.
 - Mettre des données dans le payload.
